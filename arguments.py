@@ -33,8 +33,8 @@ def parse_arguments(parser):
     parser.add_argument('--use_parallel', type=bool, default=False, help='')
     parser.add_argument('--vocab_size', type=int, help='')
 
-    parser.add_argument('--data_path', type=str, default='../Datasets/weibo/', help='')
-    parser.add_argument('--input_path', type=str, default='../Datasets/weibo/embedding_inputs/', help='')
+    parser.add_argument('--data_path', type=str, default='./Datasets/weibo/', help='')
+    parser.add_argument('--input_path', type=str, default='./Datasets/weibo/embedding_inputs/', help='')
     parser.add_argument('--output_path', type=str, default=output_file, help='')
 
     return parser

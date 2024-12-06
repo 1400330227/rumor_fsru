@@ -127,7 +127,9 @@ def load_data(args):
 
     print("Loading word2vec...")
     word_embedding_path = args.data_path + 'w2v.pickle'
-    w2v = pickle.load(open(word_embedding_path, 'rb'))
+    # w2v = pickle.load(open(word_embedding_path, 'rb'))
+    with open(word_embedding_path, 'rb') as f:
+        w2v = pickle.load(f, encoding='latin1')
     # w2v = w2v.wv
     print("Number of words already in word2vec:" + str(len(w2v)))
     add_unknown_words(w2v, vocab)

@@ -187,6 +187,7 @@ def main(args):
                 best_valid_recall = valid_recall
                 best_valid_f1 = valid_f1
                 print('Best...')
+                torch.save(model, 'best_model.pth')
                 # print(metrics.classification_report(valid_y, valid_pred, digits=4))
                 target_names = ['non-rumor', 'rumor']
                 report = metrics.classification_report(valid_y, valid_pred, output_dict=True, target_names=target_names)
