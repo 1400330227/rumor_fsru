@@ -18,7 +18,7 @@ def parse_arguments(parser):
     parser.add_argument('--d_model', type=int, default=256, help='Model dimension')
     parser.add_argument('--d_text', type=int, default=32, help='Text dimension weibo: 32')
     parser.add_argument('--img_size', type=int, default=224, help='')
-    parser.add_argument('--k', type=int, default=5, help='K-fold')
+    parser.add_argument('--k', type=int, default=1, help='K-fold')
     parser.add_argument('--lr', type=float, default=0.01, help='Learning rate')
     parser.add_argument('--l2', type=float, default=0.0, help='')
     parser.add_argument('--num_class', type=int, default=2, help='')
@@ -33,8 +33,8 @@ def parse_arguments(parser):
     parser.add_argument('--use_parallel', type=bool, default=False, help='')
     parser.add_argument('--vocab_size', type=int, help='')
 
-    parser.add_argument('--data_path', type=str, default='./Datasets/weibo/', help='')
-    parser.add_argument('--input_path', type=str, default='./Datasets/weibo/embedding_inputs/', help='')
+    parser.add_argument('--data_path', type=str, default='./Datasets/', help='')
+    parser.add_argument('--input_path', type=str, default='./Datasets/embedding_inputs/', help='')
     parser.add_argument('--output_path', type=str, default=output_file, help='')
 
     return parser
