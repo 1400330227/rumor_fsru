@@ -13,22 +13,23 @@ import torch.nn.functional as F
 from functorch.dim import Tensor
 from torchvision import transforms
 
-
+IMG_FORMATS = ['bmp', 'dng', 'jpeg', 'jpg', 'mpo', 'png', 'tif', 'tiff', 'webp']  # include image suffixes
 def get_image(data_path):
     image_dict = {}
     # path_list = [data_path+'nonrumor_images/', data_path+'rumor_images/']
-    path_list = [data_path + 'imagesV2_images/', data_path + 'imagesV3_images/']
+    path_list = [data_path + 'images/']
     for path in path_list:
-        data_transforms = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ])
+        # data_transforms = transforms.Compose([
+        #     transforms.Resize(256),
+        #     transforms.CenterCrop(224),
+        #     transforms.ToTensor(),
+        #     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        # ])
         for i, filename in enumerate(os.listdir(path)):
             try:
-                im = Image.open(path + filename).convert('RGB')
-                im = data_transforms(im)
+                im = path + filename
+                # im = Image.open(path + filename).convert('RGB')
+                # im = data_transforms(im)
                 # image_dict[filename.split('/')[-1].split('.')[0]] = im  # remove '.jpg'
                 image_dict[filename] = im  # remove '.jpg'
             except:
@@ -149,7 +150,8 @@ def load_data(args):
 
     print('Loading data...')
     train_data = get_data(args.data_path, 'train', image_dict)
-    test_data = get_data(args.data_path, 'test', image_dict)
+    # test_data = get_data(args.data_path, 'test', image_dict)
+    test_data = {'text': [], 'image': [], 'label': []}
 
     vocab, all_text = get_vocab(train_data, test_data)
     print("vocab size: " + str(len(vocab)))
