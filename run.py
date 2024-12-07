@@ -108,6 +108,7 @@ def main(args):
 
         # train
         model.train()
+        train_pred, train_y = [], []
         for j, (train_text, train_image, train_labels) in enumerate(train_loader):
             num_r, num_nr = count(train_labels)
             train_text, train_image, train_labels = to_var(train_text), to_var(train_image), to_var(train_labels)
@@ -125,6 +126,14 @@ def main(args):
             train_loss.backward()
             optimizer.step()
             pred = torch.max(label_outputs, 1)[1]
+
+            if j == 0:
+                train_pred = to_np(pred.squeeze())
+                train_y = to_np(train_labels.squeeze())
+            else:
+                train_pred = np.concatenate((train_pred, to_np(pred.squeeze())), axis=0)
+                train_y = np.concatenate((train_y, to_np(train_labels.squeeze())), axis=0)
+
             train_accuracy = torch.eq(train_labels, pred.squeeze()).float().mean()  # .sum() / len(train_labels)
             train_losses.append(train_loss.item())
             train_acc.append(train_accuracy.item())
@@ -151,14 +160,14 @@ def main(args):
                 else:
                     valid_pred = np.concatenate((valid_pred, to_np(pred.squeeze())), axis=0)
                     valid_y = np.concatenate((valid_y, to_np(valid_labels.squeeze())), axis=0)
-        # cur_valid_acc = np.mean(valid_acc)
+
         cur_valid_acc = metrics.accuracy_score(valid_y, valid_pred)
         valid_pre = metrics.precision_score(valid_y, valid_pred, average='macro')
         valid_recall = metrics.recall_score(valid_y, valid_pred, average='macro')
         valid_f1 = metrics.f1_score(valid_y, valid_pred, average='macro')
         duration = time.time() - start_time
-        print('Epoch[{}/{}], Duration:{:.8f}, Loss:{:.8f}, Train_Accuracy:{:.5f}, Valid_accuracy:{:.5f}'.format(
-            epoch + 1, args.num_epoch, duration, np.mean(train_losses), np.mean(train_acc), cur_valid_acc))
+        print('Epoch[{}/{}], Duration:{:.8f}, Loss:{:.8f}, Train_Accuracy:{:.5f}, Valid_accuracy:{:.5f}, Len_Train: {:.1f}'.format(
+            epoch + 1, args.num_epoch, duration, np.mean(train_losses), metrics.accuracy_score(train_y, train_pred), cur_valid_acc, len(train_y)))
         loss_list.append(np.mean(cls_loss))
         acc_list.append(cur_valid_acc)
 
@@ -168,7 +177,7 @@ def main(args):
             best_valid_recall = valid_recall
             best_valid_f1 = valid_f1
             print('Best...')
-            # print(metrics.classification_report(valid_y, valid_pred, digits=4))
+
             target_names = ['non-rumor', 'rumor']
             report = metrics.classification_report(valid_y, valid_pred, output_dict=True, target_names=target_names)
             nr_report = report['non-rumor']

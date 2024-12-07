@@ -17,7 +17,7 @@ from torchvision import transforms
 def get_image(data_path):
     image_dict = {}
     # path_list = [data_path+'nonrumor_images/', data_path+'rumor_images/']
-    path_list = [data_path + 'imagesV2_images/']
+    path_list = [data_path + 'imagesV2_images/', data_path + 'imagesV3_images/']
     for path in path_list:
         data_transforms = transforms.Compose([
             transforms.Resize(256),
@@ -59,22 +59,28 @@ def get_data(data_path, mode, image_dict):
     ct = 0
     for url in image_url:
         image = url.split('\t') if isinstance(url, str) else []
-        image_dict_tensors = []
-        image_temp = torch.tensor(np.ones((3, 224, 224), dtype=np.uint8) * 255)
         for img in image:
-            if img in image_dict:  # 有照片
-                img = image_dict[img]
-                image_dict_tensors.append(img)
-        if len(image_dict_tensors) == 1:
-            image_temp = image_dict_tensors[0]
-        elif len(image_dict_tensors) > 1:
-            temp = torch.concat(image_dict_tensors, dim=1)
-            resized_images = F.interpolate(temp.unsqueeze(0), size=(224, 224), mode='bilinear', align_corners=False)
-            image_temp = resized_images.squeeze(0)
-
-        texts.append(tweet[ct].split())
-        images.append(image_temp)
-        labels.append(label[ct])
+            if img in image_dict:
+                texts.append(tweet[ct].split())
+                images.append(image_dict[img])
+                labels.append(label[ct])
+                break
+        # image_dict_tensors = []
+        # image_temp = torch.tensor(np.ones((3, 224, 224), dtype=np.uint8) * 255)
+        # for img in image:
+        #     if img in image_dict:  # 有照片
+        #         img = image_dict[img]
+        #         image_dict_tensors.append(img)
+        # if len(image_dict_tensors) == 1:
+        #     image_temp = image_dict_tensors[0]
+        # elif len(image_dict_tensors) > 1:
+        #     temp = torch.concat(image_dict_tensors, dim=1)
+        #     resized_images = F.interpolate(temp.unsqueeze(0), size=(224, 224), mode='bilinear', align_corners=False)
+        #     image_temp = resized_images.squeeze(0)
+        #
+        # texts.append(tweet[ct].split())
+        # images.append(image_temp)
+        # labels.append(label[ct])
         ct += 1
     print('weibo:', len(texts), 'samples...')
 
@@ -152,17 +158,15 @@ def load_data(args):
 
     print("Loading word2vec...")
     word_embedding_path = args.data_path + 'w2v.pickle'
-    # w2v = pickle.load(open(word_embedding_path, 'rb'))
+
     with open(word_embedding_path, 'rb') as f:
         w2v = pickle.load(f, encoding='latin1')
-    # w2v = w2v.wv
+
     print("Number of words already in word2vec:" + str(len(w2v)))
     add_unknown_words(w2v, vocab)
     W, word_idx_map = get_W(w2v)
-    # w_file = open(args.data_path+'word_embedding.pickle', 'wb')
-    # pickle.dump([W, word_idx_map, vocab, max_len], w_file)
-    # w_file.close()
     args.vocab_size = len(vocab)
+
     print('Translate text to embedding...')
     train_data['text_embed'] = word2vec(train_data['text'], word_idx_map, args.seq_len)
     test_data['text_embed'] = word2vec(test_data['text'], word_idx_map, args.seq_len)
@@ -171,7 +175,5 @@ def load_data(args):
     text_embed = train_data['text_embed'] + test_data['text_embed']
     image = train_data['image'] + test_data['image']
     label = train_data['label'] + test_data['label']
-    # data = {'text': np.array(text), 'text_embed':np.array(text_embed),
-    #         'image': np.array(image), 'label': np.array(label)}
 
     return np.array(text_embed), np.array(image), np.array(label), W

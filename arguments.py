@@ -22,7 +22,7 @@ def parse_arguments(parser):
     parser.add_argument('--lr', type=float, default=0.01, help='Learning rate')
     parser.add_argument('--l2', type=float, default=0.0, help='')
     parser.add_argument('--num_class', type=int, default=2, help='')
-    parser.add_argument('--num_epoch', type=int, default=50, help='Number of epoch')
+    parser.add_argument('--num_epoch', type=int, default=200, help='Number of epoch')
     parser.add_argument('--num_filter', type=int, default=2, help='Number of filter bank')
     parser.add_argument('--num_layer', type=int, default=1, help='Number of block layer')
     parser.add_argument('--patch_size', type=int, default=16, help='Image patch size')

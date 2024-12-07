@@ -81,10 +81,9 @@ def main(args):
     valid_loader = DataLoader(dataset=MyDataset(valid), batch_size=args.batch_size, shuffle=False)
 
     print('Building model...')
-    model = torch.load('best_model_2.pth')
+    model = torch.load('./models/best_model.pth')
     model = model.to(device)
     model.eval()
-    valid_acc, valid_pre, valid_recall, valid_f1, epo = 0, 0, 0, 0, 0
     with torch.no_grad():
         for j, (valid_text, valid_image, valid_labels) in enumerate(valid_loader):
             valid_text, valid_image, valid_labels = to_var(valid_text), to_var(valid_image), to_var(
@@ -92,16 +91,24 @@ def main(args):
             _, _, label_outputs, _ = model(valid_text, valid_image)
             label_outputs = F.softmax(label_outputs, dim=1)
             pred = torch.max(label_outputs, 1)[1]
-            valid_acc += metrics.accuracy_score(np.array(valid_labels), np.array(pred))
-            valid_pre += metrics.precision_score(valid_labels, pred, average='macro')
-            valid_recall += metrics.recall_score(valid_labels, pred, average='macro')
-            valid_f1 += metrics.f1_score(valid_labels, pred, average='macro')
-            epo += 1
+            if j == 0:
+                valid_pred = to_np(pred.squeeze())
+                valid_y = to_np(valid_labels.squeeze())
+            else:
+                valid_pred = np.concatenate((valid_pred, to_np(pred.squeeze())), axis=0)
+                valid_y = np.concatenate((valid_y, to_np(valid_labels.squeeze())), axis=0)
+        result = (valid_y == valid_pred).sum()
+        lens = len(valid_loader.dataset)
+        print('正确数:{:.2f}, 总数:{:.2f}'.format(result, lens))
+        valid_acc = metrics.accuracy_score(valid_y, valid_pred)
+        valid_pre = metrics.precision_score(valid_y, valid_pred, average='macro')
+        valid_recall = metrics.recall_score(valid_y, valid_pred, average='macro')
+        valid_f1 = metrics.f1_score(valid_y, valid_pred, average='macro')
 
-        print('在测试集上的准确率为:{:1f}%'.format(100. * valid_acc / epo))
-        print('在测试集上的精确率为:{:1f}%'.format(100. * valid_pre / epo))
-        print('在测试集上的召回率为:{:1f}%'.format(100. * valid_recall / epo))
-        print('在测试集上的F1为:{:1f}%'.format(100. * valid_f1 / epo))
+        print('在测试集上的准确率为:{:.2f}%'.format(100. * valid_acc))
+        print('在测试集上的精确率为:{:.2f}%'.format(100. * valid_pre))
+        print('在测试集上的召回率为:{:.2f}%'.format(100. * valid_recall))
+        print('在测试集上的F1为:{:.2f}%'.format(100. * valid_f1))
 
 
 if __name__ == '__main__':
